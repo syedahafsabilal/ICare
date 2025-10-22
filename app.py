@@ -12,8 +12,8 @@ if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is missing. Set it in your .env file.")
 
 
-# Configure Gemini client
-genai.configure(api_key=GEMINI_API_KEY)
+# Initialize Gemini model (✅ correct model name)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Function to get Gemini response
 def get_gemini_response(user_input):
@@ -275,6 +275,7 @@ if user_input:
 
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.rerun()
+
 
 
 
