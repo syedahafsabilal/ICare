@@ -10,10 +10,16 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY is missing. Set it in your .env file.")
-client = OpenAI(
-    api_key=GEMINI_API_KEY,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
+# Configure OpenAI client for Gemini API
+openai.api_key = GEMINI_API_KEY
+openai.base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+def get_gemini_response(user_input):
+    response = openai.ChatCompletion.create(
+        model="gemini-1.5-flash",  # or gemini-pro if you prefer
+        messages=[{"role": "user", "content": user_input}]
+    )
+    return response.choices[0].message["content"]
+
 
 def therapy_guardrail(user_input: str) -> bool:
     allowed_keywords = [
@@ -267,4 +273,5 @@ if user_input:
 
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.rerun()
+
 
