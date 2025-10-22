@@ -2,26 +2,22 @@ import streamlit as st
 import os
 import re
 from dotenv import load_dotenv
-import google.generativeai as genai
-
+from openai import OpenAI
 
 # Load API key and initialize client
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY is missing. Set it in your .env file.")
 
+# Load Gemini API key (works locally + on Streamlit Cloud)
+api_key = os.getenv("GEMINI_API_KEY") or st.secrets["GEMINI_API_KEY"]
 
-# Initialize Gemini model (✅ correct model name)
-model = genai.GenerativeModel("gemini-1.5-flash")
+if not api_key:
+    raise ValueError("GEMINI_API_KEY is missing. Please add it in .env or Streamlit secrets.")
 
-# Function to get Gemini response
-def get_gemini_response(user_input):
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(user_input)
-    return response.text
-
-
+# Initialize client
+client = OpenAI(
+    api_key=api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+)
 def therapy_guardrail(user_input: str) -> bool:
     allowed_keywords = [
         "anxiety", "stress", "depression", "mental health","die",
@@ -182,17 +178,18 @@ def get_therapist_reply(name: str, query: str) -> str:
         "being comforting and practical."
     )
     try:
-        response = openai.ChatCompletion.create(
-            model="gemini-1.5-flash",
+        response = client.chat.completions.create(
+            model="gemini-2.5-flash",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
             ],
             temperature=0.7,
         )
-        return response.choices[0].message["content"]
+        return response.choices[0].message.content
     except Exception as e:
         return f"Sorry, there was an error processing your request. ({e})"
+import streamlit as st
 
 st.set_page_config(page_title="Care Chat Companion Therapist Chatbot", page_icon="💖")
 
@@ -269,14 +266,7 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # Get response from Gemini agent
-    bot_reply = get_gemini_response(user_input)
-
-
+    bot_reply = get_therapist_reply(name="User", query=user_input)
 
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.rerun()
-
-
-
-
-
