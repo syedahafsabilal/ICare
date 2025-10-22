@@ -2,7 +2,8 @@ import streamlit as st
 import os
 import re
 from dotenv import load_dotenv
-from openai import OpenAI
+import openai
+
 
 # Load API key and initialize client
 load_dotenv()
@@ -266,3 +267,4 @@ if user_input:
 
     st.session_state.messages.append({"role": "bot", "content": bot_reply})
     st.rerun()
+
